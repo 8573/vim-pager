@@ -2,7 +2,7 @@
 
 program_name="$(basename "$0")"
 
-if [ "$1" = -h ] || [ "$1" = --help ]; then
+show_help() {
 	echo "A script for using Vim as a pager.
 
 Usage:
@@ -14,16 +14,26 @@ reads from stdin.
 
 Options:
   -h, --help    Displays this help message, then exits.
-"
+  -m, --man     Optimizes Vim for displaying manual pages (man-pages).
+" >&2
 	exit 2
-fi
+}
 
 # I realize that Vim-as-pager scripts already exist, but the ones I've used
 # don't work (well enough) for me for various reasons.
 
-if [ "$1" = -- ]; then
+while [ -n "$1" ]; do
+	case "$1" in
+		(-h|--help)
+			show_help;;
+		(-m|--man)
+			man_mode=yes;;
+		(--)
+			shift
+			break;;
+	esac
 	shift
-fi
+done
 
 # If stdout is not a terminal, cat the files to it rather than opening Vim.
 if [ ! -t 1 ]; then
@@ -33,24 +43,129 @@ fi
 
 # stdout is a terminal, so continue on with opening Vim.
 
-postinit='
+if [ -z "$1" ]; then
+	stdin="$(mktemp -t 'vim-pager-stdin.XXXXXXXXXX')"
+	cat > "$stdin"
+	trap "rm $stdin" EXIT INT QUIT ABRT TERM
+fi
+
+postinit="$(mktemp -t 'vim-pager-postinit.XXXXXXXXXX')"
+trap "rm $postinit" EXIT INT QUIT ABRT TERM
+
+cat > "$postinit" <<'VIMSCRIPT'
+scriptencoding utf-8
+
 setlocal nomodifiable nomodified readonly
 
-if &shell =~ &filetype
+if !empty(&l:filetype) && &shell =~ &l:filetype
 	syntax off
 endif
 
 noremap <buffer> d <C-d>
 noremap <buffer> u <C-u>
-'
+
+autocmd VimEnter * call VimPagerInit()
+
+function VimPagerInit()
+VIMSCRIPT
+
+if [ "$man_mode" != yes ]; then
+	cat >> "$postinit" <<'VIMSCRIPT'
+setlocal filetype=none conceallevel=2 concealcursor=nvc
+
+syntax clear
+
+let l:csicodes = [
+\	['cterm=bold', 1, 22],
+\	['cterm=underline', 4, 24]
+\ ]
+
+for [l:type, l:start, l:end] in l:csicodes
+	let l:name = substitute(l:type, '[= ]', '_', 'g')
+	let l:othercodes = filter(copy(l:csicodes),
+		\ 'v:val[0] != ' . string(l:type))
+	let l:otherstarts = join(map(copy(l:othercodes),
+		\ '''\e\[''.v:val[1].''m'''), '|')
+	let l:othernames = join(map(copy(l:othercodes),
+		\ 'substitute(v:val[0], ''[= ]'', ''_'', ''g'')'), ',')
+	execute 'syntax region' l:name 'matchgroup='.l:name
+		\ .'Ends start=/\e\['.l:start
+		\ .'m/ end=/\ze\e\[0m/ end=/\ze\v%('.l:otherstarts
+		\ .')*\e\['.l:end.'m/ concealends contains=CsiCode,'
+		\ .l:othernames
+	execute 'highlight' l:name l:type
+endfor
+
+let l:csicodenames = join(map(copy(l:csicodes),
+	\ 'substitute(v:val[0], ''[= ]'', ''_'', ''g'')'), ',')
+
+execute 'syntax region CsiCode start=/\e\[/ end=/m/ conceal contains='
+	\ .l:csicodenames
+VIMSCRIPT
+else
+	cat >> "$postinit" <<'VIMSCRIPT'
+" Specifically not the standard `man` filetype.
+setlocal filetype=manpage concealcursor=nvc conceallevel=2 nolist nowrap
+
+syntax clear
+
+syntax region CSICodeBold
+	\ matchgroup=CSICodeBoldEnds
+	\ start='\e\[1m' end='\ze\e\[0m' end='\ze\v%(\e\[4m)*\e\[22m'
+	\ display concealends contains=CSICodeEtc,CSICodeUnderline
+syntax region CSICodeUnderline
+	\ matchgroup=CSICodeUnderlineEnds
+	\ start='\e\[4m' end='\ze\e\[0m' end='\ze\v%(\e\[1m)*\e\[24m'
+	\ display concealends contains=CSICodeEtc,CSICodeBold
+syntax match CSICode /\e\[[^m]*m/
+	\ display conceal
+syntax match CSICodeEtc /\e\[[^m]*m/
+	\ display conceal contains=CSICodeBold,CSICodeUnderline
+
+syntax region OverstrikeBold
+	\ matchgroup=OverstrikeBoldEnds
+	\ start='\(.\)\b\ze\1' end='.\zs'
+	\ display concealends
+syntax region OverstrikeUnderline
+	\ matchgroup=OverstrikeUnderlineEnds
+	\ start='_\b' end='.\zs'
+	\ display concealends
+syntax match OverstrikeBullet '+\bo'
+	\ display conceal cchar=•
+
+syntax match manHeading '^\s\{,3}\S.*'
+	\ display contains=CSICode,manHeadingOverstrike
+syntax match manHeadingOverstrike '.\b'
+	\ display conceal contained
+
+highlight LineNr ctermfg=darkgray
+highlight Conceal ctermfg=none ctermbg=none cterm=bold
+
+if &t_Co > 16
+	highlight manHeading ctermfg=magenta cterm=bold
+else
+	highlight manHeading ctermfg=magenta
+endif
+
+highlight manBold cterm=bold
+highlight manUnderline cterm=underline
+
+highlight link CSICodeBold manBold
+highlight link CSICodeUnderline manUnderline
+
+highlight link OverstrikeBold manBold
+highlight link OverstrikeUnderline manUnderline
+VIMSCRIPT
+fi
+
+echo 'endfunction' >> "$postinit"
 
 if [ -n "$1" ]; then
 	# Files given, so open them.
-	vim -Nnc "$postinit" "$@"
+	vim -NnS "$postinit" "$@"
 else
 	# No files given, so read stdin.
-	input="$(mktemp -t 'vim-pager.XXXXXXXXXX')"
-	cat > $input
-	vim -Nnc "$postinit" "$@" "$input" < /dev/tty
-	trap 'rm '"$input" EXIT INT QUIT ABRT TERM
+	vim -NnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
+
+# vim: noet sw=8 ts=8
