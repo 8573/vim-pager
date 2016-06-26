@@ -24,13 +24,18 @@ Options:
 
 while [ -n "$1" ]; do
 	case "$1" in
+		([!-]*)
+			break;;
+		(--)
+			shift
+			break;;
 		(-h|--help)
 			show_help;;
 		(-m|--man)
 			man_mode=yes;;
-		(--)
-			shift
-			break;;
+		(*)
+			echo "${program_name}: unrecognized option '$1'; try '${program_name} --help'." >&2
+			exit 2;;
 	esac
 	shift
 done
