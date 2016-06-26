@@ -1,0 +1,55 @@
+#!/usr/bin/env zsh
+emulate zsh
+
+if [[ $1 == -h || $1 == --help ]] {
+	echo "usage: vp (-h | --help | [[--] {<Vim option>} [--] {<file>}])
+If stdout is a terminal, opens the given files in Vim in Less-mode.
+If stdout is not a terminal, writes the given files to stdout.
+If no files are given, reads from stdin."
+	exit 2
+}
+
+# I realize that Vim-as-pager scripts already exist, but the ones I've used
+# don't work (well enough) for me for various reasons.
+
+if [[ $1 == -- ]] {
+	shift
+}
+
+# If stdout is not a terminal, cat the files to it rather than opening Vim.
+if [[ ! -t 1 ]] {
+	cat -- $@
+	exit $?
+}
+
+# stdout is a terminal, so continue on with opening Vim.
+
+# Find rc file, if any.
+for rc (~/.vimpagerrc ~/.vim/vimpagerrc '') {
+	if [[ -e $rc ]] {
+		break
+	}
+}
+
+#preinit='source /usr/local/share/vp/preinit.vim'
+
+postinit='
+setlocal nomodifiable nomodified readonly
+
+if &shell =~ &filetype
+	syntax off
+endif
+
+noremap <buffer> d <C-d>
+noremap <buffer> u <C-u>
+'
+
+vim=(vim -Nnc $postinit $@)
+
+if [[ -n $1 && $argv[-1] != -- ]] {
+	# Files given, so open them.
+	$vim
+} else {
+	# No files given, so read stdin.
+	$vim =(cat) < /dev/tty
+}

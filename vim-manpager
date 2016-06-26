@@ -1,0 +1,2 @@
+#!/usr/bin/env zsh
+vim-pager -- -c 'autocmd VimEnter * source /usr/local/share/vp-man.vim' --
