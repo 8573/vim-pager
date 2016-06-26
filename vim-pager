@@ -41,16 +41,24 @@ if [ ! -t 1 ]; then
 	exit $?
 fi
 
+cleanup() {
+	for f in "$stdin" "$postinit"; do
+		if [ -e "$f" ]; then
+			rm -- "$f"
+		fi
+	done
+}
+
+trap 'cleanup' EXIT INT QUIT ABRT TERM
+
 # stdout is a terminal, so continue on with opening Vim.
 
 if [ -z "$1" ]; then
 	stdin="$(mktemp -t 'vim-pager-stdin.XXXXXXXXXX')"
 	cat > "$stdin"
-	trap "rm $stdin" EXIT INT QUIT ABRT TERM
 fi
 
 postinit="$(mktemp -t 'vim-pager-postinit.XXXXXXXXXX')"
-trap "rm $postinit" EXIT INT QUIT ABRT TERM
 
 cat > "$postinit" <<'VIMSCRIPT'
 scriptencoding utf-8
