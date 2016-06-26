@@ -1,7 +1,9 @@
 #!/bin/sh
 
+program_name="$(basename "$0")"
+
 if [ "$1" = -h ] || [ "$1" = --help ]; then
-	echo "usage: vp (-h | --help | [[--] {<Vim option>} [--] {<file>}])
+	echo "usage: ${program_name} (-h | --help | [[--] {<Vim option>} [--] {<file>}])
 If stdout is a terminal, opens the given files in Vim in Less-mode.
 If stdout is not a terminal, writes the given files to stdout.
 If no files are given, reads from stdin."
