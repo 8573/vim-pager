@@ -23,15 +23,6 @@ fi
 
 # stdout is a terminal, so continue on with opening Vim.
 
-# Find rc file, if any.
-for rc in ~/.vimpagerrc ~/.vim/vimpagerrc ''; do
-	if [ -e "$rc" ]; then
-		break
-	fi
-done
-
-#preinit='source /usr/local/share/vp/preinit.vim'
-
 postinit='
 setlocal nomodifiable nomodified readonly
 
