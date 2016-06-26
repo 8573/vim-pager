@@ -119,7 +119,7 @@ VIMSCRIPT
 else
 	cat >> "$postinit" <<'VIMSCRIPT'
 " Specifically not the standard `man` filetype.
-setlocal filetype=manpage nolist nowrap
+setlocal filetype=manpage nolist nonumber nowrap
 
 syntax clear
 
