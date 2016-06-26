@@ -3,10 +3,18 @@
 program_name="$(basename "$0")"
 
 if [ "$1" = -h ] || [ "$1" = --help ]; then
-	echo "usage: ${program_name} (-h | --help | [[--] {<Vim option>} [--] {<file>}])
-If stdout is a terminal, opens the given files in Vim in Less-mode.
-If stdout is not a terminal, writes the given files to stdout.
-If no files are given, reads from stdin."
+	echo "A script for using Vim as a pager.
+
+Usage:
+  ${program_name} [options] [--] [Vim options] [--] [<file>...]
+
+If stdout is a terminal, opens the given files in Vim in Less-mode. If stdout
+is not a terminal, writes the given files to stdout. If no files are given,
+reads from stdin.
+
+Options:
+  -h, --help    Displays this help message, then exits.
+"
 	exit 2
 fi
 
