@@ -80,11 +80,12 @@ noremap <buffer> u <C-u>
 autocmd VimEnter * call VimPagerInit()
 
 function VimPagerInit()
+setlocal concealcursor=nvc conceallevel=2
 VIMSCRIPT
 
 if [ "$man_mode" != yes ]; then
 	cat >> "$postinit" <<'VIMSCRIPT'
-setlocal filetype=none conceallevel=2 concealcursor=nvc
+setlocal filetype=none
 
 syntax clear
 
@@ -118,7 +119,7 @@ VIMSCRIPT
 else
 	cat >> "$postinit" <<'VIMSCRIPT'
 " Specifically not the standard `man` filetype.
-setlocal filetype=manpage concealcursor=nvc conceallevel=2 nolist nowrap
+setlocal filetype=manpage nolist nowrap
 
 syntax clear
 
