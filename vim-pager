@@ -1,35 +1,34 @@
-#!/usr/bin/env zsh
-emulate zsh
+#!/bin/sh
 
-if [[ $1 == -h || $1 == --help ]] {
+if [ "$1" = -h ] || [ "$1" = --help ]; then
 	echo "usage: vp (-h | --help | [[--] {<Vim option>} [--] {<file>}])
 If stdout is a terminal, opens the given files in Vim in Less-mode.
 If stdout is not a terminal, writes the given files to stdout.
 If no files are given, reads from stdin."
 	exit 2
-}
+fi
 
 # I realize that Vim-as-pager scripts already exist, but the ones I've used
 # don't work (well enough) for me for various reasons.
 
-if [[ $1 == -- ]] {
+if [ "$1" = -- ]; then
 	shift
-}
+fi
 
 # If stdout is not a terminal, cat the files to it rather than opening Vim.
-if [[ ! -t 1 ]] {
-	cat -- $@
+if [ ! -t 1 ]; then
+	cat -- "$@"
 	exit $?
-}
+fi
 
 # stdout is a terminal, so continue on with opening Vim.
 
 # Find rc file, if any.
-for rc (~/.vimpagerrc ~/.vim/vimpagerrc '') {
-	if [[ -e $rc ]] {
+for rc in ~/.vimpagerrc ~/.vim/vimpagerrc ''; do
+	if [ -e "$rc" ]; then
 		break
-	}
-}
+	fi
+done
 
 #preinit='source /usr/local/share/vp/preinit.vim'
 
@@ -44,12 +43,13 @@ noremap <buffer> d <C-d>
 noremap <buffer> u <C-u>
 '
 
-vim=(vim -Nnc $postinit $@)
-
-if [[ -n $1 && $argv[-1] != -- ]] {
+if [ -n "$1" ]; then
 	# Files given, so open them.
-	$vim
-} else {
+	vim -Nnc "$postinit" "$@"
+else
 	# No files given, so read stdin.
-	$vim =(cat) < /dev/tty
-}
+	input="$(mktemp -t 'vim-pager.XXXXXXXXXX')"
+	cat > $input
+	vim -Nnc "$postinit" "$@" "$input" < /dev/tty
+	trap 'rm '"$input" EXIT INT QUIT ABRT TERM
+fi
