@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# vim-pager
+# ========
+#
+# A shell script for using Vim as a pager.
+#
+# I realize that Vim-as-pager scripts already exist, but the ones I've used
+# didn't work (well enough) for me for various reasons.
+#
+#
+# Legal information
+# --------
+#
+# Copyright 02016 the authors (see the `AUTHORS.txt` file). Licensed under the
+# Apache License, version 2.0 (the "Licence"); you may not use this file except
+# in compliance with the Licence. One may obtain a copy of the Licence at
+# <https://www.apache.org/licenses/LICENSE-2.0>. Unless required by applicable
+# law or agreed to in writing, software distributed under the Licence is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the Licence for the specific language
+# governing permissions and limitations under the Licence.
+
 program_name="$(basename "$0")"
 
 show_help() {
@@ -18,9 +39,6 @@ Options:
 " >&2
 	exit 2
 }
-
-# I realize that Vim-as-pager scripts already exist, but the ones I've used
-# don't work (well enough) for me for various reasons.
 
 while [ -n "$1" ]; do
 	case "$1" in
