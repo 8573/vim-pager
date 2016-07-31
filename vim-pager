@@ -172,10 +172,10 @@ echo 'endfunction' >> "$postinit"
 
 if [ -n "$1" ]; then
 	# Files given, so open them.
-	vim -NnS "$postinit" "$@"
+	vim -NfnS "$postinit" "$@"
 else
 	# No files given, so read stdin.
-	vim -NnS "$postinit" "$@" "$stdin" < /dev/tty
+	vim -NfnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
 
 # vim: noet sw=8 ts=8
