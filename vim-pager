@@ -40,6 +40,19 @@ Options:
 	exit 2
 }
 
+vim=vim
+vim_extra_args=''
+
+editor_program="${EDITOR%% *}"
+
+if which "$editor_program" >/dev/null 2>&1; then
+	case "$(basename "$editor_program")" in
+		(vim|gvim)
+			vim="$EDITOR"
+			vim_extra_args="${EDITOR#"$editor_program"}";;
+	esac
+fi
+
 while [ -n "$1" ]; do
 	case "$1" in
 		([!-]*)
@@ -172,10 +185,14 @@ echo 'endfunction' >> "$postinit"
 
 if [ -n "$1" ]; then
 	# Files given, so open them.
-	vim -NfnS "$postinit" "$@"
+
+	# ShellCheck disable=SC2086
+	"$vim" $vim_extra_args -NfnS "$postinit" "$@"
 else
 	# No files given, so read stdin.
-	vim -NfnS "$postinit" "$@" "$stdin" < /dev/tty
+
+	# ShellCheck disable=SC2086
+	"$vim" $vim_extra_args -NfnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
 
 # vim: noet sw=8 ts=8
