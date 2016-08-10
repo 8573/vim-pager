@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# vim-manpager
+# ========
+#
+# A shell script for using Vim as a pager for `man`.
+#
+#
+# Legal information
+# --------
+#
+# Copyright 02016 the authors (see the `AUTHORS.txt` file). Licensed under the
+# Apache License, version 2.0 (the "Licence"); you may not use this file except
+# in compliance with the Licence. One may obtain a copy of the Licence at
+# <https://www.apache.org/licenses/LICENSE-2.0>. Unless required by applicable
+# law or agreed to in writing, software distributed under the Licence is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the Licence for the specific language
+# governing permissions and limitations under the Licence.
+
+program_name="$(basename "$0")"
+
+show_help() {
+	echo 'A script for using Vim as a pager for `man`.
+
+Usage:
+  '"${program_name}"' [--help | -h] [<argument>...]
+
+Invokes the command `vim-pager` with the `--man` option and all provided
+arguments, unless the `--help` (`-h`) option is given, in which case this help
+message is displayed.
+
+This is a wrapper script intended for use in any case where providing the
+`--man` option to `vim-pager` is desirable but otherwise infeasible.
+
+Options:
+  -h, --help    Displays this help message, then exits.
+' >&2
+	exit 2
+}
+
+while [ -n "$1" ]; do
+	case "$1" in
+		([!-]*)
+			break;;
+		(--)
+			shift
+			break;;
+		(-h|--help)
+			show_help;;
+	esac
+	shift
+done
+
+vim-pager --man "$@"
+
+# vim: noet sw=8 ts=8
