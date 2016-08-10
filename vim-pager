@@ -24,7 +24,7 @@
 program_name="$(basename "$0")"
 
 show_help() {
-	echo "A script for using Vim as a pager.
+   echo "A script for using Vim as a pager.
 
 Usage:
   ${program_name} [options] [--] [Vim options] [--] [<file>...]
@@ -37,55 +37,55 @@ Options:
   -h, --help    Displays this help message, then exits.
   -m, --man     Optimizes Vim for displaying manual pages (man-pages).
 " >&2
-	exit 2
+   exit 2
 }
 
 vim=vim
 vim_extra_args=''
 
 for editor_cmd in "$VISUAL" "$EDITOR"; do
-	editor_program="${editor_cmd%% *}"
+   editor_program="${editor_cmd%% *}"
 
-	if which "$editor_program" >/dev/null 2>&1; then
-		case "$(basename "$editor_program")" in
-			(vim|gvim)
-				vim="$editor_program"
-				vim_extra_args="${editor_cmd#"$editor_program"}"
-				break;;
-		esac
-	fi
+   if which "$editor_program" >/dev/null 2>&1; then
+      case "$(basename "$editor_program")" in
+         (vim|gvim)
+            vim="$editor_program"
+            vim_extra_args="${editor_cmd#"$editor_program"}"
+            break;;
+      esac
+   fi
 done
 
 while [ -n "$1" ]; do
-	case "$1" in
-		([!-]*)
-			break;;
-		(--)
-			shift
-			break;;
-		(-h|--help)
-			show_help;;
-		(-m|--man)
-			man_mode=yes;;
-		(*)
-			echo "${program_name}: unrecognized option '$1'; try '${program_name} --help'." >&2
-			exit 2;;
-	esac
-	shift
+   case "$1" in
+      ([!-]*)
+         break;;
+      (--)
+         shift
+         break;;
+      (-h|--help)
+         show_help;;
+      (-m|--man)
+         man_mode=yes;;
+      (*)
+         echo "${program_name}: unrecognized option '$1'; try '${program_name} --help'." >&2
+         exit 2;;
+   esac
+   shift
 done
 
 # If stdout is not a terminal, cat the files to it rather than opening Vim.
 if [ ! -t 1 ]; then
-	cat -- "$@"
-	exit $?
+   cat -- "$@"
+   exit $?
 fi
 
 cleanup() {
-	for f in "$stdin" "$postinit"; do
-		if [ -e "$f" ]; then
-			rm -- "$f"
-		fi
-	done
+   for f in "$stdin" "$postinit"; do
+      if [ -e "$f" ]; then
+         rm -- "$f"
+      fi
+   done
 }
 
 trap 'cleanup' EXIT INT QUIT ABRT TERM
@@ -93,8 +93,8 @@ trap 'cleanup' EXIT INT QUIT ABRT TERM
 # stdout is a terminal, so continue on with opening Vim.
 
 if [ -z "$1" ]; then
-	stdin="$(mktemp -t 'vim-pager-stdin.XXXXXXXXXX')"
-	cat > "$stdin"
+   stdin="$(mktemp -t 'vim-pager-stdin.XXXXXXXXXX')"
+   cat > "$stdin"
 fi
 
 postinit="$(mktemp -t 'vim-pager-postinit.XXXXXXXXXX')"
@@ -105,7 +105,7 @@ scriptencoding utf-8
 setlocal nomodifiable nomodified readonly
 
 if !empty(&l:filetype) && &shell =~ &l:filetype
-	syntax off
+   syntax off
 endif
 
 noremap <buffer> d <C-d>
@@ -118,63 +118,63 @@ setlocal concealcursor=nvc conceallevel=2
 VIMSCRIPT
 
 if [ "$man_mode" != yes ]; then
-	cat >> "$postinit" <<'VIMSCRIPT'
+   cat >> "$postinit" <<'VIMSCRIPT'
 setlocal filetype=none
 
 if exists(':AnsiEsc')
-	AnsiEsc
+   AnsiEsc
 else
-	syntax clear
-	syntax match CsiCode /\e\[[^m]*m/ conceal
+   syntax clear
+   syntax match CsiCode /\e\[[^m]*m/ conceal
 endif
 VIMSCRIPT
 else
-	cat >> "$postinit" <<'VIMSCRIPT'
+   cat >> "$postinit" <<'VIMSCRIPT'
 " Specifically not the standard `man` filetype.
 setlocal filetype=manpage nolist nonumber nowrap
 
 syntax clear
 
 syntax region CSICodeBold
-	\ matchgroup=CSICodeBoldEnds
-	\ start='\e\[1m' end='\ze\e\[0m' end='\ze\v%(\e\[4m)*\e\[22m'
-	\ display concealends contains=CSICodeEtc,CSICodeUnderline
+   \ matchgroup=CSICodeBoldEnds
+   \ start='\e\[1m' end='\ze\e\[0m' end='\ze\v%(\e\[4m)*\e\[22m'
+   \ display concealends contains=CSICodeEtc,CSICodeUnderline
 syntax region CSICodeUnderline
-	\ matchgroup=CSICodeUnderlineEnds
-	\ start='\e\[4m' end='\ze\e\[0m' end='\ze\v%(\e\[1m)*\e\[24m'
-	\ display concealends contains=CSICodeEtc,CSICodeBold
+   \ matchgroup=CSICodeUnderlineEnds
+   \ start='\e\[4m' end='\ze\e\[0m' end='\ze\v%(\e\[1m)*\e\[24m'
+   \ display concealends contains=CSICodeEtc,CSICodeBold
 syntax match CSICode /\e\[[^m]*m/
-	\ display conceal
+   \ display conceal
 syntax match CSICodeEtc /\e\[[^m]*m/
-	\ display conceal contains=CSICodeBold,CSICodeUnderline
+   \ display conceal contains=CSICodeBold,CSICodeUnderline
 
 syntax region OverstrikeBold
-	\ matchgroup=OverstrikeBoldEnds
-	\ start='\(.\)\b\ze\1' end='.\zs'
-	\ display concealends
+   \ matchgroup=OverstrikeBoldEnds
+   \ start='\(.\)\b\ze\1' end='.\zs'
+   \ display concealends
 syntax region OverstrikeUnderline
-	\ matchgroup=OverstrikeUnderlineEnds
-	\ start='_\b' end='.\zs'
-	\ display concealends
+   \ matchgroup=OverstrikeUnderlineEnds
+   \ start='_\b' end='.\zs'
+   \ display concealends
 syntax match OverstrikeBullet '+\bo'
-	\ display conceal cchar=•
+   \ display conceal cchar=•
 
 syntax match manHeading '^\s\{,3}\S.*'
-	\ display contains=CSICode,manHeadingOverstrike
+   \ display contains=CSICode,manHeadingOverstrike
 syntax match manHeadingOverstrike '.\b'
-	\ display conceal contained
+   \ display conceal contained
 
 highlight LineNr ctermfg=darkgray guifg=darkgray
 highlight Conceal
-	\ ctermfg=none ctermbg=none cterm=bold
-	\ guifg=bg guibg=bg gui=bold
+   \ ctermfg=none ctermbg=none cterm=bold
+   \ guifg=bg guibg=bg gui=bold
 
 if &t_Co > 16 || has('gui_running')
-	highlight manHeading
-		\ ctermfg=magenta cterm=bold
-		\ guifg=#FFA0FF gui=bold,underline
+   highlight manHeading
+      \ ctermfg=magenta cterm=bold
+      \ guifg=#FFA0FF gui=bold,underline
 else
-	highlight manHeading ctermfg=magenta
+   highlight manHeading ctermfg=magenta
 endif
 
 highlight manBold cterm=bold gui=bold
@@ -191,15 +191,15 @@ fi
 echo 'endfunction' >> "$postinit"
 
 if [ -n "$1" ]; then
-	# Files given, so open them.
+   # Files given, so open them.
 
-	# ShellCheck disable=SC2086
-	"$vim" $vim_extra_args -NfnS "$postinit" "$@"
+   # ShellCheck disable=SC2086
+   "$vim" $vim_extra_args -NfnS "$postinit" "$@"
 else
-	# No files given, so read stdin.
+   # No files given, so read stdin.
 
-	# ShellCheck disable=SC2086
-	"$vim" $vim_extra_args -NfnS "$postinit" "$@" "$stdin" < /dev/tty
+   # ShellCheck disable=SC2086
+   "$vim" $vim_extra_args -NfnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
 
-# vim: noet sw=8 ts=8
+# vim: et sw=3
