@@ -93,6 +93,25 @@ trap 'cleanup' EXIT INT QUIT ABRT TERM
 if [ -z "$1" ]; then
    stdin="${tmpdir}/stdin"
    cat > "$stdin"
+
+   # In man-pager mode, use the man-page's name as the name of the input file.
+   if [ "$man_mode" = yes ]; then
+      first_word="$(head -n 1 "$stdin" | join -a 1 -o 1.1 - /dev/null)"
+      case "$first_word" in
+         (*'('*')')
+            manpage_name="$(printf '%s\n' "$first_word" \
+               | tr -d ')' \
+               | tr '(' '.' \
+               | tr '[:upper:]' '[:lower:]')"
+
+            new_stdin_f="${tmpdir}/${manpage_name}"
+
+            if pathchk "$new_stdin_f" 2>/dev/null; then
+               mv "$stdin" "$new_stdin_f"
+               stdin="$new_stdin_f"
+            fi
+      esac
+   fi
 fi
 
 postinit="${tmpdir}/postinit"
