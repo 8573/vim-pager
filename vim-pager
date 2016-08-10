@@ -138,6 +138,8 @@ if [ "$man_mode" != yes ]; then
    cat >> "$postinit" <<'VIMSCRIPT'
 setlocal filetype=none
 
+set titlestring=%t\ %M\ %{v:servername!=''?v:servername\ :'Vim'}
+
 if exists(':AnsiEsc')
    AnsiEsc
 else
@@ -149,6 +151,8 @@ else
    cat >> "$postinit" <<'VIMSCRIPT'
 " Specifically not the standard `man` filetype.
 setlocal filetype=manpage nolist nonumber nowrap
+
+set titlestring=%{expand('%:t:r')}(%{expand('%:e')})\ %M\ %{v:servername!=''?v:servername\ :'Vim'}
 
 syntax clear
 
