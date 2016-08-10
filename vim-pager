@@ -132,6 +132,7 @@ autocmd VimEnter * call VimPagerInit()
 
 function VimPagerInit()
 setlocal concealcursor=nvc conceallevel=2
+let g:airline#extensions#tabline#fnamemod = ':t'
 VIMSCRIPT
 
 if [ "$man_mode" != yes ]; then
