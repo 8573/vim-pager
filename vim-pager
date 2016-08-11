@@ -86,7 +86,7 @@ cleanup() {
    rm -r -- "$tmpdir"
 }
 
-trap 'cleanup' EXIT INT QUIT ABRT TERM
+trap 'cleanup' INT QUIT ABRT TERM
 
 # stdout is a terminal, so continue on with opening Vim.
 
@@ -210,18 +210,22 @@ highlight link OverstrikeUnderline manUnderline
 VIMSCRIPT
 fi
 
-echo 'endfunction' >> "$postinit"
+cat >> "$postinit" <<VIMSCRIPT
+autocmd VimLeave * !rm -r '$tmpdir'
+
+endfunction
+VIMSCRIPT
 
 if [ -n "$1" ]; then
    # Files given, so open them.
 
    # shellcheck disable=SC2086
-   "$vim" $vim_extra_args -NfnS "$postinit" "$@"
+   "$vim" $vim_extra_args -NnS "$postinit" "$@"
 else
    # No files given, so read stdin.
 
    # shellcheck disable=SC2086
-   "$vim" $vim_extra_args -NfnS "$postinit" "$@" "$stdin" < /dev/tty
+   "$vim" $vim_extra_args -NnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
 
 # vim: et sw=3
