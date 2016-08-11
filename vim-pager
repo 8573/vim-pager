@@ -215,12 +215,12 @@ echo 'endfunction' >> "$postinit"
 if [ -n "$1" ]; then
    # Files given, so open them.
 
-   # ShellCheck disable=SC2086
+   # shellcheck disable=SC2086
    "$vim" $vim_extra_args -NfnS "$postinit" "$@"
 else
    # No files given, so read stdin.
 
-   # ShellCheck disable=SC2086
+   # shellcheck disable=SC2086
    "$vim" $vim_extra_args -NfnS "$postinit" "$@" "$stdin" < /dev/tty
 fi
 
