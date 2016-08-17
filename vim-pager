@@ -24,10 +24,10 @@
 program_name="$(basename "$0")"
 
 show_help() {
-   echo "A script for using Vim as a pager.
+   echo 'A script for using Vim as a pager.
 
 Usage:
-  ${program_name} [options] [--] [Vim options] [--] [<file>...]
+  '"${program_name}"' [options] [--] [Vim options] [--] [<file>...]
 
 If stdout is a terminal, opens the given files in Vim in Less-mode. If stdout
 is not a terminal, writes the given files to stdout. If no files are given,
@@ -36,7 +36,7 @@ reads from stdin.
 Options:
   -h, --help    Displays this help message, then exits.
   -m, --man     Optimizes Vim for displaying manual pages (man-pages).
-" >&2
+' >&2
    exit 2
 }
 
