@@ -29,9 +29,23 @@ show_help() {
 Usage:
   '"${program_name}"' [options] [--] [Vim options] [--] [<file>...]
 
-If stdout is a terminal, opens the given files in Vim in Less-mode. If stdout
-is not a terminal, writes the given files to stdout. If no files are given,
-reads from stdin.
+If the standard output stream is directed to a terminal, this script opens the
+given files in an instance of Vim configured for use as a pager, passing along
+the given "Vim options". If the standard output stream is not directed to a
+terminal, this script writes the given files to the standard output stream. If
+no files are given, this script reads from the standard input stream instead.
+
+If the environment variable `VIMPAGER_VIM` is set and non-null, its value is
+used as the command to run as "Vim"; if the value contains a space character,
+everything before the first space character will be assumed to be a program to
+invoke, and everything after the first space character will be assumed to be
+arguments to pass to that program.
+
+If the environment variable `VIMPAGER_VIM` is unset or null, the environment
+variables `VISUAL` and `EDITOR` will be checked in its stead, in that order,
+and the first of them found to be set and non-null will be used as would
+`VIMPAGER_VIM`. If all three environment variables are unset or null, the
+default installation of Vim will be invoked.
 
 Options:
   -h, --help    Displays this help message, then exits.
