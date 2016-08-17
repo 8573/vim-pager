@@ -43,18 +43,23 @@ Options:
 vim=vim
 vim_extra_args=''
 
-for editor_cmd in "$VISUAL" "$EDITOR"; do
-   editor_program="${editor_cmd%% *}"
+if [ -n "$VIMPAGER_VIM" ]; then
+   vim="${VIMPAGER_VIM%% *}"
+   vim_extra_args="${VIMPAGER_VIM#"$vim"}"
+else
+   for editor_cmd in "$VISUAL" "$EDITOR"; do
+      editor_program="${editor_cmd%% *}"
 
-   if which "$editor_program" >/dev/null 2>&1; then
-      case "$(basename "$editor_program")" in
-         (vim*|gvim*)
-            vim="$editor_program"
-            vim_extra_args="${editor_cmd#"$editor_program"}"
-            break;;
-      esac
-   fi
-done
+      if which "$editor_program" >/dev/null 2>&1; then
+         case "$(basename "$editor_program")" in
+            (vim*|gvim*)
+               vim="$editor_program"
+               vim_extra_args="${editor_cmd#"$editor_program"}"
+               break;;
+         esac
+      fi
+   done
+fi
 
 while [ -n "$1" ]; do
    case "$1" in
