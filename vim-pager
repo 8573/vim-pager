@@ -48,7 +48,7 @@ for editor_cmd in "$VISUAL" "$EDITOR"; do
 
    if which "$editor_program" >/dev/null 2>&1; then
       case "$(basename "$editor_program")" in
-         (vim|gvim)
+         (vim*|gvim*)
             vim="$editor_program"
             vim_extra_args="${editor_cmd#"$editor_program"}"
             break;;
